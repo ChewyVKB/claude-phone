@@ -1,0 +1,60 @@
+services:
+  asterisk:
+    container_name: claude-asterisk
+    image: ghcr.io/chewyvkb/claude-phone-asterisk:latest
+    restart: unless-stopped
+    network_mode: host   # SIP + call audio need host networking; the phone talks to it directly
+    environment:
+      - TZ=${TZ:-America/Chicago}
+      - PHONE_EXT=${PHONE_EXT:-100}
+      - PHONE_PASSWORD=${PHONE_PASSWORD}
+    volumes:
+      - ./App-Data/ClaudePhone/spool:/spool
+    healthcheck:
+      test: ["CMD-SHELL", "asterisk -rx 'core show uptime' >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  claude-box:
+    container_name: claude-box
+    image: ghcr.io/chewyvkb/claude-phone-box:latest
+    restart: unless-stopped
+    init: true
+    depends_on:
+      - asterisk
+    environment:
+      - TZ=${TZ:-America/Chicago}
+      - PHONE_EXT=${PHONE_EXT:-100}
+      - TTYD_USER=${TTYD_USER:-claude}
+      - TTYD_PASS=${TTYD_PASS}
+      - WHISPER_MODEL=${WHISPER_MODEL:-small.en}
+      - WHISPER_HINT=${WHISPER_HINT:-Proxmox, Docker Compose, Asterisk, homelab, VLAN, Polycom, Claude}
+      - PIPER_VOICE=${PIPER_VOICE:-en_US-lessac-medium}
+      - QUIET_HOURS=${QUIET_HOURS:-22-7}
+      - MIN_CALL_GAP=${MIN_CALL_GAP:-60}
+      - CALLBACK_MODE=${CALLBACK_MODE:-phone}
+      - PHONE_SESSION_HOURS=${PHONE_SESSION_HOURS:-3}
+      - RING_ON_DONE=${RING_ON_DONE:-false}
+    ports:
+      - "7681:7681"   # browser view of the Claude session
+    volumes:
+      - ./App-Data/ClaudePhone/spool:/spool
+      - ./App-Data/ClaudePhone/home:/home/claude
+      - ./App-Data/ClaudePhone/models:/data
+      - ./App-Data/ClaudePhone/workspace:/workspace
+    healthcheck:
+      test: ["CMD-SHELL", "tmux has-session -t claude && pgrep -f watcher.py >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 600s   # first start downloads Claude Code + speech models
+    networks:
+      - default
+      - proxy
+
+networks:
+  proxy:
+    name: proxy
+    external: true
