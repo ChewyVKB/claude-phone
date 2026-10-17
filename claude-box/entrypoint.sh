@@ -2,11 +2,6 @@
 # Runs as root: make sure bind-mounted folders belong to uid 1000, then start as the claude user.
 set -euo pipefail
 
-if [ -z "${TTYD_PASS:-}" ]; then
-  echo "ERROR: TTYD_PASS is empty. Set it in your stack variables." >&2
-  exit 1
-fi
-
 mkdir -p /spool /home/claude /data /workspace
 for d in /spool /home/claude /data; do
   [ "$(stat -c %u "$d")" = "1000" ] || chown -R 1000:1000 "$d"

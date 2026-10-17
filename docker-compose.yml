@@ -28,7 +28,7 @@ services:
       - TZ=${TZ:-America/Chicago}
       - PHONE_EXT=${PHONE_EXT:-100}
       - TTYD_USER=${TTYD_USER:-claude}
-      - TTYD_PASS=${TTYD_PASS}
+      - TTYD_PASS=${TTYD_PASS:-}   # leave empty when behind Authelia
       - WHISPER_MODEL=${WHISPER_MODEL:-small.en}
       - WHISPER_HINT=${WHISPER_HINT:-Proxmox, Docker Compose, Asterisk, homelab, VLAN, Polycom, Claude}
       - PIPER_VOICE=${PIPER_VOICE:-en_US-lessac-medium}
@@ -37,8 +37,8 @@ services:
       - CALLBACK_MODE=${CALLBACK_MODE:-phone}
       - PHONE_SESSION_HOURS=${PHONE_SESSION_HOURS:-3}
       - RING_ON_DONE=${RING_ON_DONE:-false}
-    ports:
-      - "7681:7681"   # browser view of the Claude session
+    # No published ports: the browser view (port 7681) is reached through the proxy network,
+    # so Authelia always sits in front of it.
     volumes:
       - ./App-Data/ClaudePhone/spool:/spool
       - ./App-Data/ClaudePhone/home:/home/claude
