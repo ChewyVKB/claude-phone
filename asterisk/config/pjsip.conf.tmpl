@@ -1,0 +1,35 @@
+; Rendered to /etc/asterisk/pjsip.conf at container start.
+; ${PHONE_EXT} and ${PHONE_PASSWORD} come from .env
+
+[global]
+type = global
+user_agent = ClaudePhone
+
+[transport-udp]
+type = transport
+protocol = udp
+bind = 0.0.0.0:5060
+
+; ---- The Polycom VVX 501 ----
+[${PHONE_EXT}]
+type = endpoint
+context = from-phone
+disallow = all
+allow = g722,ulaw          ; G.722 = wideband audio, much better for Whisper
+auth = ${PHONE_EXT}-auth
+aors = ${PHONE_EXT}
+direct_media = no
+dtmf_mode = rfc4733
+callerid = "Desk Phone" <${PHONE_EXT}>
+
+[${PHONE_EXT}-auth]
+type = auth
+auth_type = userpass
+username = ${PHONE_EXT}
+password = ${PHONE_PASSWORD}
+
+[${PHONE_EXT}]
+type = aor
+max_contacts = 1
+remove_existing = yes
+qualify_frequency = 30

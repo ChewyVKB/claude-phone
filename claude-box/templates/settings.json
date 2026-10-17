@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "python3 /opt/claude-phone/hook.py pretool", "async": true }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          { "type": "command", "command": "python3 /opt/claude-phone/hook.py permission", "timeout": 10 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python3 /opt/claude-phone/hook.py stop", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}
