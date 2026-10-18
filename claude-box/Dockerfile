@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates curl git jq less nano procps openssh-client tzdata \
-      tmux sox ffmpeg \
+      tmux sox ffmpeg iptables \
       python3 python3-venv \
  && rm -rf /var/lib/apt/lists/*
 

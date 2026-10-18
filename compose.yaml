@@ -29,6 +29,7 @@ services:
       - PHONE_EXT=${PHONE_EXT:-100}
       - TTYD_USER=${TTYD_USER:-claude}
       - TTYD_PASS=${TTYD_PASS:-}   # leave empty when behind Authelia
+      - TRUSTED_PROXY_IP=${TRUSTED_PROXY_IP:-}   # IP of the VM running Traefik; only it may open the browser view
       - WHISPER_MODEL=${WHISPER_MODEL:-small.en}
       - WHISPER_HINT=${WHISPER_HINT:-Proxmox, Docker Compose, Asterisk, homelab, VLAN, Polycom, Claude}
       - PIPER_VOICE=${PIPER_VOICE:-en_US-lessac-medium}
@@ -37,8 +38,10 @@ services:
       - CALLBACK_MODE=${CALLBACK_MODE:-phone}
       - PHONE_SESSION_HOURS=${PHONE_SESSION_HOURS:-3}
       - RING_ON_DONE=${RING_ON_DONE:-false}
-    # No published ports: the browser view (port 7681) is reached through the proxy network,
-    # so Authelia always sits in front of it.
+    ports:
+      - "7681:7681"   # browser view; firewalled to TRUSTED_PROXY_IP inside the container
+    cap_add:
+      - NET_ADMIN     # lets the container set that firewall rule (affects only this container)
     volumes:
       - ./App-Data/ClaudePhone/spool:/spool
       - ./App-Data/ClaudePhone/home:/home/claude
