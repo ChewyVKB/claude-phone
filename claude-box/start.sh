@@ -33,13 +33,13 @@ fi
 # 4) ttyd: watch (and type into) the same session from a browser
 if [ -n "${TTYD_PASS:-}" ]; then
   # Own password prompt (use this only when NOT behind Authelia or another login proxy)
-  ttyd -p 7681 -W -c "${TTYD_USER:-claude}:${TTYD_PASS}" -t titleFixed="Claude Phone" \
+  ttyd -d 3 -p 7681 -W -c "${TTYD_USER:-claude}:${TTYD_PASS}" -t titleFixed="Claude Phone" \
     tmux attach -t claude &
 else
   # No password of its own: login is handled by your reverse proxy (Authelia).
   # The compose file publishes no port, so only the proxy network can reach this.
   echo "[claude-box] TTYD_PASS is empty: browser view relies on your proxy's login"
-  ttyd -p 7681 -W -t titleFixed="Claude Phone" tmux attach -t claude &
+  ttyd -d 3 -p 7681 -W -t titleFixed="Claude Phone" tmux attach -t claude &
 fi
 
 # 5) The watcher (foreground; its output is `docker logs claude-box`)
