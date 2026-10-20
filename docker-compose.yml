@@ -48,7 +48,9 @@ services:
       - ./App-Data/ClaudePhone/models:/data
       - ./App-Data/ClaudePhone/workspace:/workspace
     healthcheck:
-      test: ["CMD-SHELL", "tmux has-session -t claude && pgrep -f watcher.py >/dev/null || exit 1"]
+      test:
+        - "CMD-SHELL"
+        - "tmux -S /tmp/tmux-$(id -u claude)/default has-session -t claude 2>/dev/null && pgrep -f '[w]atcher\\.py' >/dev/null"
       interval: 30s
       timeout: 5s
       retries: 3
