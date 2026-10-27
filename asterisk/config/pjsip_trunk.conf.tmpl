@@ -1,0 +1,47 @@
+; VoIP.ms trunk (only included when TRUNK_USER is set in .env).
+; Asterisk registers OUT to VoIP.ms, so no router port forwarding is needed.
+
+[voipms-reg]
+type = registration
+transport = transport-udp
+outbound_auth = voipms-auth
+server_uri = sip:${TRUNK_SERVER}:5060
+client_uri = sip:${TRUNK_USER}@${TRUNK_SERVER}:5060
+retry_interval = 60
+forbidden_retry_interval = 600
+expiration = 3600
+line = yes
+endpoint = voipms
+
+[voipms-auth]
+type = auth
+auth_type = userpass
+username = ${TRUNK_USER}
+password = ${TRUNK_PASSWORD}
+
+[voipms]
+type = aor
+contact = sip:${TRUNK_SERVER}:5060
+qualify_frequency = 60          ; keeps your router's NAT path open for incoming calls
+
+[voipms]
+type = endpoint
+transport = transport-udp
+context = from-voipms           ; incoming calls can only ring your phone, never dial out
+disallow = all
+allow = ulaw
+outbound_auth = voipms-auth
+aors = voipms
+from_user = ${TRUNK_USER}
+from_domain = ${TRUNK_SERVER}
+send_rpid = yes
+direct_media = no
+rtp_symmetric = yes
+force_rport = yes
+rewrite_contact = yes
+dtmf_mode = rfc4733
+
+[voipms]
+type = identify
+endpoint = voipms
+match = ${TRUNK_SERVER}

@@ -1,0 +1,33 @@
+; Real phone number via VoIP.ms (only active when TRUNK_USER is set in .env).
+
+; ---- Outgoing: dial from the desk phone ----
+[outbound-trunk]
+; 911 always goes out, even if anything else is misconfigured
+exten => 911,1,Set(CALLERID(num)=${TRUNK_NUMBER})
+ same => n,Dial(PJSIP/911@voipms)
+ same => n,Hangup()
+
+; 10-digit US/Canada number: 5551234567
+exten => _NXXNXXXXXX,1,Set(CALLERID(num)=${TRUNK_NUMBER})
+ same => n,Dial(PJSIP/1${EXTEN}@voipms,,T)
+ same => n,Hangup()
+
+; 11-digit with leading 1: 15551234567
+exten => _1NXXNXXXXXX,1,Set(CALLERID(num)=${TRUNK_NUMBER})
+ same => n,Dial(PJSIP/${EXTEN}@voipms,,T)
+ same => n,Hangup()
+
+; International (011...) is deliberately not allowed.
+
+; ---- Incoming: someone calls your number ----
+[from-voipms]
+exten => _X.,1,Goto(ring-phone,s,1)
+exten => _[a-zA-Z].,1,Goto(ring-phone,s,1)
+exten => s,1,Goto(ring-phone,s,1)
+
+[ring-phone]
+exten => s,1,Dial(PJSIP/${PHONE_EXT},30)
+; Not answered or busy: report it back so VoIP.ms can send the call to its voicemail
+ same => n,GotoIf($["${DIALSTATUS}" = "BUSY"]?busy)
+ same => n,Hangup(19)
+ same => n(busy),Busy(5)

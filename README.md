@@ -23,6 +23,21 @@ Then:
 2. Point the VVX at the VM: SIP server `<vm-ip>`, user/auth `100`, your `PHONE_PASSWORD`.
 3. Speed dials: **2525** (Claude) and **\*26** (mute callbacks). **600** is an echo test.
 
+## Real phone number (optional)
+
+The same phone can be a normal home phone through a VoIP.ms number. Add to `.env`:
+
+```
+TRUNK_USER=123456_home          # VoIP.ms sub-account username
+TRUNK_PASSWORD=...              # its password (avoid the ; character)
+TRUNK_SERVER=chicago.voip.ms    # the VoIP.ms server your sub-account uses
+TRUNK_NUMBER=5551234567         # your VoIP.ms number, 10 digits
+```
+
+Dial 10-digit numbers (or 1 + 10 digits, or 911) to call out; calls to your number ring the phone.
+2525 still goes to Claude. International dialing is blocked. No router port forwarding is needed.
+Check it with `docker exec claude-asterisk asterisk -rx "pjsip show registrations"` (should say Registered).
+
 ## Using it
 
 - **Talk to Claude:** dial 2525, wait for the beep, speak, hang up (or pause 3 s, or press #).

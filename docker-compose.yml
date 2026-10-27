@@ -8,6 +8,11 @@ services:
       - TZ=${TZ:-America/Chicago}
       - PHONE_EXT=${PHONE_EXT:-100}
       - PHONE_PASSWORD=${PHONE_PASSWORD}
+      # Optional: real phone number through VoIP.ms (leave TRUNK_USER empty to disable)
+      - TRUNK_USER=${TRUNK_USER:-}
+      - TRUNK_PASSWORD=${TRUNK_PASSWORD:-}
+      - TRUNK_SERVER=${TRUNK_SERVER:-chicago.voip.ms}
+      - TRUNK_NUMBER=${TRUNK_NUMBER:-}
     volumes:
       - ./App-Data/ClaudePhone/spool:/spool
     healthcheck:
