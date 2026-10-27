@@ -62,13 +62,25 @@ jobs:
           docker run -d --name ast --network host \
             -e PHONE_PASSWORD=testpass -e TRUNK_USER=100000_test -e TRUNK_PASSWORD=x \
             -e TRUNK_SERVER=chicago.voip.ms -e TRUNK_NUMBER=5551234567 "$IMG"
-          sleep 15
-          docker logs ast 2>&1 | tail -20
-          ast() { docker exec ast asterisk -rx "$1"; }
-          ast "pjsip show endpoint voipms" | grep -q "from-voipms"
-          ast "pjsip show registrations" | grep -q "voipms-reg"
-          ast "dialplan show 5551234567@from-phone" | grep -qF 'PJSIP/1${EXTEN}@voipms'
-          ast "dialplan show 911@from-phone" | grep -q "PJSIP/911@voipms"
-          ast "dialplan show 2525@from-phone" | grep -q "claude-prompt"
-          ast "dialplan show s@ring-phone" | grep -q "PJSIP/100"
+          for i in $(seq 1 30); do docker exec ast asterisk -rx "core show uptime" >/dev/null 2>&1 && break; sleep 2; done
+          sleep 3
+          fail=0
+          check() {  # check "<asterisk command>" "<text that must appear>"
+            out=$(docker exec ast asterisk -rx "$1" 2>&1)
+            if printf '%s' "$out" | grep -qF -- "$2"; then echo "OK: $1"; else
+              fail=1
+              msg=$(printf '%s' "$out" | head -c 1500 | sed ':a;N;$!ba;s/\n/%0A/g')
+              echo "::error title=missing '$2' in: $1::$msg"
+            fi
+          }
+          check "pjsip show endpoint voipms" "from-voipms"
+          check "pjsip show registrations" "voipms-reg"
+          check "dialplan show 5551234567@from-phone" 'PJSIP/1${EXTEN}@voipms'
+          check "dialplan show 911@from-phone" "PJSIP/911@voipms"
+          check "dialplan show 2525@from-phone" "claude-prompt"
+          check "dialplan show s@ring-phone" "PJSIP/100"
+          if [ "$fail" = 1 ]; then
+            echo "::error title=asterisk log::$(docker logs ast 2>&1 | grep -iE 'error|warn' | tail -15 | sed ':a;N;$!ba;s/\n/%0A/g')"
+            exit 1
+          fi
           echo "Asterisk config OK"
