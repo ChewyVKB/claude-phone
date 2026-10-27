@@ -75,7 +75,7 @@ jobs:
           }
           check "pjsip show endpoint voipms" "from-voipms"
           check "pjsip show registrations" "voipms-reg"
-          check "dialplan show 5551234567@from-phone" 'PJSIP/1${EXTEN}@voipms'
+          check "dialplan show 3125550123@from-phone" 'PJSIP/1${EXTEN}@voipms'
           check "dialplan show 911@from-phone" "PJSIP/911@voipms"
           check "dialplan show 2525@from-phone" "claude-prompt"
           check "dialplan show s@ring-phone" "PJSIP/100"
